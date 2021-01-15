@@ -3,6 +3,12 @@ name = "flp-gsp"
 version = "0.1.0"
 authors = ["Hakukano <flp.hakukano@gmail.com>"]
 edition = "2018"
+description = "General search parser"
+repository = "https://github.com/Hakukano/FLP-GSP"
+documentation = "https://docs.rs/flp-gsp"
+homepage = "https://flp-gsp.rs/"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
