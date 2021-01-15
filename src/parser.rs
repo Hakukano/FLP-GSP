@@ -30,20 +30,20 @@ parser! {
     }
 
     relation: Expression {
-        GroupStart comparision[a] GroupEnd => a,
+        GroupStart comparison[a] GroupEnd => a,
         GroupStart relation[a] And relation[b] GroupEnd => Expression {
             span: span!(),
             node: Expr::And(Box::new(a), Box::new(b)),
         },
-        GroupStart relation[a] And comparision[b] GroupEnd => Expression {
+        GroupStart relation[a] And comparison[b] GroupEnd => Expression {
             span: span!(),
             node: Expr::And(Box::new(a), Box::new(b)),
         },
-        GroupStart comparision[a] And relation[b] GroupEnd => Expression {
+        GroupStart comparison[a] And relation[b] GroupEnd => Expression {
             span: span!(),
             node: Expr::And(Box::new(a), Box::new(b)),
         },
-        GroupStart comparision[a] And comparision[b] GroupEnd => Expression {
+        GroupStart comparison[a] And comparison[b] GroupEnd => Expression {
             span: span!(),
             node: Expr::And(Box::new(a), Box::new(b)),
         },
@@ -52,15 +52,15 @@ parser! {
             span: span!(),
             node: Expr::Or(Box::new(a), Box::new(b)),
         },
-        GroupStart relation[a] Or comparision[b] GroupEnd => Expression {
+        GroupStart relation[a] Or comparison[b] GroupEnd => Expression {
             span: span!(),
             node: Expr::Or(Box::new(a), Box::new(b)),
         },
-        GroupStart comparision[a] Or relation[b] GroupEnd => Expression {
+        GroupStart comparison[a] Or relation[b] GroupEnd => Expression {
             span: span!(),
             node: Expr::Or(Box::new(a), Box::new(b)),
         },
-        GroupStart comparision[a] Or comparision[b] GroupEnd => Expression {
+        GroupStart comparison[a] Or comparison[b] GroupEnd => Expression {
             span: span!(),
             node: Expr::Or(Box::new(a), Box::new(b)),
         },
@@ -69,13 +69,13 @@ parser! {
             span: span!(),
             node: Expr::Not(Box::new(a)),
         },
-        GroupStart Not comparision[a] GroupEnd => Expression {
+        GroupStart Not comparison[a] GroupEnd => Expression {
             span: span!(),
             node: Expr::Not(Box::new(a)),
         },
     }
 
-    comparision: Expression {
+    comparison: Expression {
         Str(a) Equal Str(b) => Expression {
             span: span!(),
             node: Expr::Equal(a, b),
