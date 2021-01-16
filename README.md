@@ -6,6 +6,10 @@
 
 General Search Parser
 
+# Simple Search String Builder
+
+[Goto](https://hakukano.github.io)
+
 # LALR(1) Grammer
 
 ## Search:
