@@ -1,6 +1,7 @@
 pub mod ast;
+pub mod interpreter;
 pub mod lexer;
-mod parser;
+pub mod parser;
 
 /// Parse a search string to an AST
 ///
@@ -39,51 +40,51 @@ mod parser;
 /// * Str Regex Str
 ///
 /// ## Str
-/// 
+///
 /// * \`\[^\`\]\*\`
-/// 
+///
 /// ## GroupStart
-/// 
+///
 /// * (
-/// 
+///
 /// ## GroupEnd
-/// 
+///
 /// * )
-/// 
+///
 /// ## And
-/// 
+///
 /// * &
-/// 
+///
 /// ## Or
-/// 
+///
 /// * |
-/// 
+///
 /// ## Not
-/// 
+///
 /// * !
-/// 
+///
 /// ## Equal
-/// 
+///
 /// * =
-/// 
+///
 /// ## EqualCI
-/// 
+///
 /// * ~
-/// 
+///
 /// ## Greater
-/// 
-/// * >
-/// 
+///
+/// * \>
+///
 /// ## Less
-/// 
+///
 /// * <
-/// 
+///
 /// ## Wildcard
-/// 
+///
 /// * \*
-/// 
+///
 /// ## Regex
-/// 
+///
 /// * $
 pub fn parse(
     text: &str,
@@ -95,18 +96,5 @@ pub fn parse(
     } else {
         let lexer = lexer::Lexer::new(text);
         parser::parse(lexer)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::parse;
-    #[test]
-    fn it_works() {
-        let mut s = String::new();
-        std::io::stdin().read_line(&mut s).unwrap();
-        let search = parse(&s, false).unwrap();
-        println!("{:?}", search);
-        assert_eq!(2 + 2, 4);
     }
 }

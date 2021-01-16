@@ -69,7 +69,7 @@ General Search Parser
 
 ## Greater
 
-* >
+* \>
 
 ## Less
 
