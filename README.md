@@ -1,4 +1,9 @@
 # FLP-GSP
+
+![Crates.io](https://img.shields.io/crates/v/flp-gsp)
+![Crates.io](https://img.shields.io/crates/l/flp-gsp)
+![Crates.io](https://img.shields.io/crates/d/flp-gsp)
+
 General Search Parser
 
 # LALR(1) Grammer
