@@ -6,91 +6,61 @@
 
 General Search Parser
 
-# Simple Search String Builder
+# General Search String (GSS) Builder
 
-[Goto](https://hakukano.github.io)
+[Goto the page](https://hakukano.github.io).
 
-# LALR(1) Grammer
+# General Search String (GSS) LALR(1) Grammer
 
-## Search:
+```
+    Search -> Statements
 
-* Statements
+Statements ->
+           -> Statements Relation
 
-## Statements:
+  Relation -> GroupStart Comparison GroupEnd
+           -> GroupStart Relation And Relation GroupEnd
+           -> GroupStart Relation And Comparison GroupEnd
+           -> GroupStart Comparison And Relation GroupEnd
+           -> GroupStart Comparison And Comparison GroupEnd
+           -> GroupStart Relation Or Relation GroupEnd
+           -> GroupStart Relation Or Comparison GroupEnd
+           -> GroupStart Comparison Or Relation GroupEnd
+           -> GroupStart Comparison Or Comparison GroupEnd
+           -> GroupStart Not Relation GroupEnd
+           -> GroupStart Not Comparison GroupEnd
 
-* []
-* Statements Relation
+Comparison -> Str Equal Str
+           -> Str EqualCI Str
+           -> Str Greater Str
+           -> Str Less Str
+           -> Str Wildcard Str
+           -> Str Regex Str
 
-## Relation:
+       Str -> `[^`]*`
 
-* GroupStart Comparison GroupEnd
-* GroupStart Relation And Relation GroupEnd
-* GroupStart Relation And Comparison GroupEnd
-* GroupStart Comparison And Relation GroupEnd
-* GroupStart Comparison And Comparison GroupEnd
-* GroupStart Relation Or Relation GroupEnd
-* GroupStart Relation Or Comparison GroupEnd
-* GroupStart Comparison Or Relation GroupEnd
-* GroupStart Comparison Or Comparison GroupEnd
-* GroupStart Not Relation GroupEnd
-* GroupStart Not Comparison GroupEnd
+GroupStart -> (
 
-## Comparison
+  GroupEnd -> )
 
-* Str Equal Str
-* Str EqualCI Str
-* Str Greater Str
-* Str Less Str
-* Str Wildcard Str
-* Str Regex Str
+       And -> &
 
-## Str
+        Or -> |
 
-* \`\[^\`\]\*\`
+       Not -> !
 
-## GroupStart
+     Equal -> =
 
-* (
+   EqualCI -> ~
 
-## GroupEnd
+   Greater -> >
 
-* )
+      Less -> <
 
-## And
+  Wildcard -> *
 
-* &
-
-## Or
-
-* |
-
-## Not
-
-* !
-
-## Equal
-
-* =
-
-## EqualCI
-
-* ~
-
-## Greater
-
-* \>
-
-## Less
-
-* <
-
-## Wildcard
-
-* \*
-
-## Regex
-
-* $
+     Regex -> $
+```
 
 # Interpreter
 
@@ -98,9 +68,9 @@ Some example interpreters that maybe useful
 
 ## Evaluate
 
-Customizable in-code evaluating interpreter. [Goto](https://github.com/Hakukano/FLP-GSP/blob/main/src/interpreter/evaluate.rs)
+Customizable in-code evaluating interpreter. [Goto the file](https://github.com/Hakukano/FLP-GSP/blob/main/src/interpreter/evaluate.rs).
 
-An example could be found [here](https://github.com/Hakukano/FLP-GSP/blob/main/tests/evaluate.rs)
+An example could be found [here](https://github.com/Hakukano/FLP-GSP/blob/main/tests/evaluate.rs).
 
 ### Concept
 
@@ -112,9 +82,9 @@ To evaluate a `Search`, you will need `EvaluateRules` and `EvaluatePairs`.
 
 ## Mysql
 
-Generating Mysql condition clause. [Goto](https://github.com/Hakukano/FLP-GSP/blob/main/src/interpreter/mysql.rs)
+Generating Mysql condition clause. [Goto the file](https://github.com/Hakukano/FLP-GSP/blob/main/src/interpreter/mysql.rs).
 
-An example could be found [here](https://github.com/Hakukano/FLP-GSP/blob/main/tests/mysql.rs)
+An example could be found [here](https://github.com/Hakukano/FLP-GSP/blob/main/tests/mysql.rs).
 
 ### Concept
 
