@@ -2,22 +2,22 @@ use std::collections::HashMap;
 
 use crate::ast::*;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum MysqlType {
     StringLike(String),
-    Int(String),
-    Unsigned(String),
-    Float(String),
-    Double(String),
+    Int(i64),
+    Unsigned(u64),
+    Float(f32),
+    Double(f64),
 }
 impl MysqlType {
     pub fn replace_and_return(&self, s: &str) -> Self {
         match self {
             MysqlType::StringLike(_) => MysqlType::StringLike(s.into()),
-            MysqlType::Int(_) => MysqlType::Int(s.into()),
-            MysqlType::Unsigned(_) => MysqlType::Unsigned(s.into()),
-            MysqlType::Float(_) => MysqlType::Float(s.into()),
-            MysqlType::Double(_) => MysqlType::Double(s.into()),
+            MysqlType::Int(_) => MysqlType::Int(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::Unsigned(_) => MysqlType::Unsigned(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::Float(_) => MysqlType::Float(s.parse().unwrap_or_else(|_| 0.0)),
+            MysqlType::Double(_) => MysqlType::Double(s.parse().unwrap_or_else(|_| 0.0)),
         }
     }
 }

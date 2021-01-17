@@ -11,7 +11,7 @@ fn test_mysql() {
     renames.insert("sex".into(), "gender".into());
 
     let mut types = MysqlTypes::new();
-    types.insert("age".into(), MysqlType::Unsigned("".into()));
+    types.insert("age".into(), MysqlType::Unsigned(0));
 
     let interpreted = mysql(&search, &renames, &types);
     let (clause, binds) = interpreted.get(0).unwrap();
@@ -23,7 +23,7 @@ fn test_mysql() {
     assert_eq!(
         binds,
         &vec![
-            MysqlType::Unsigned("18".into()),
+            MysqlType::Unsigned(18),
             MysqlType::StringLike("male".into()),
             MysqlType::StringLike("Female".into()),
             MysqlType::StringLike("J_c%".into())
