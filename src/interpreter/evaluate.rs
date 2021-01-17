@@ -35,19 +35,19 @@ impl Default for EvaluateRule {
 pub type EvaluateRules = HashMap<String, EvaluateRule>;
 pub type EvaluatePairs = HashMap<String, String>;
 
-pub fn evaluate_expression(
+pub fn interpret_expression(
     expression: &Expression,
     rules: &EvaluateRules,
     pairs: &EvaluatePairs,
 ) -> bool {
     match &expression.node {
         Expr::And(left, right) => {
-            evaluate_expression(left, rules, pairs) && evaluate_expression(right, rules, pairs)
+            interpret_expression(left, rules, pairs) && interpret_expression(right, rules, pairs)
         }
         Expr::Or(left, right) => {
-            evaluate_expression(left, rules, pairs) || evaluate_expression(right, rules, pairs)
+            interpret_expression(left, rules, pairs) || interpret_expression(right, rules, pairs)
         }
-        Expr::Not(expr) => !evaluate_expression(expr, rules, pairs),
+        Expr::Not(expr) => !interpret_expression(expr, rules, pairs),
         Expr::Equal(key, target) => {
             let rule = rules.get(key);
             if rule.is_none() {
@@ -129,10 +129,10 @@ pub fn evaluate_expression(
     }
 }
 
-pub fn evaluate(search: &Search, rules: &EvaluateRules, pairs: &EvaluatePairs) -> Vec<bool> {
+pub fn interpret(search: &Search, rules: &EvaluateRules, pairs: &EvaluatePairs) -> Vec<bool> {
     search
         .stmts
         .iter()
-        .map(|a| evaluate_expression(a, rules, pairs))
+        .map(|a| interpret_expression(a, rules, pairs))
         .collect()
 }

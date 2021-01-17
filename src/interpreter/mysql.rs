@@ -25,7 +25,7 @@ impl MysqlType {
 pub type MysqlRenames = HashMap<String, String>;
 pub type MysqlTypes = HashMap<String, MysqlType>;
 
-pub fn mysql_expression(
+pub fn interpret_expression(
     expression: &Expression,
     renames: &MysqlRenames,
     types: &MysqlTypes,
@@ -33,21 +33,21 @@ pub fn mysql_expression(
     let fallback_type = MysqlType::StringLike("".into());
     match &expression.node {
         Expr::And(left, right) => {
-            let (left_clause, mut left_types) = mysql_expression(left, renames, types);
-            let (right_clause, mut right_types) = mysql_expression(right, renames, types);
+            let (left_clause, mut left_types) = interpret_expression(left, renames, types);
+            let (right_clause, mut right_types) = interpret_expression(right, renames, types);
             let clause = format!("({} AND {})", left_clause, right_clause);
             left_types.append(&mut right_types);
             (clause, left_types)
         }
         Expr::Or(left, right) => {
-            let (left_clause, mut left_types) = mysql_expression(left, renames, types);
-            let (right_clause, mut right_types) = mysql_expression(right, renames, types);
+            let (left_clause, mut left_types) = interpret_expression(left, renames, types);
+            let (right_clause, mut right_types) = interpret_expression(right, renames, types);
             let clause = format!("({} OR {})", left_clause, right_clause);
             left_types.append(&mut right_types);
             (clause, left_types)
         }
         Expr::Not(expr) => {
-            let (clause, types) = mysql_expression(expr, renames, types);
+            let (clause, types) = interpret_expression(expr, renames, types);
             (format!("(NOT {})", clause), types)
         }
         Expr::Equal(key, target) => (
@@ -95,7 +95,7 @@ pub fn mysql_expression(
     }
 }
 
-pub fn mysql(
+pub fn interpret(
     search: &Search,
     renames: &MysqlRenames,
     types: &MysqlTypes,
@@ -103,6 +103,6 @@ pub fn mysql(
     search
         .stmts
         .iter()
-        .map(|a| mysql_expression(a, renames, types))
+        .map(|a| interpret_expression(a, renames, types))
         .collect()
 }

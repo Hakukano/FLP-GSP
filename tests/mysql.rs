@@ -3,7 +3,7 @@ use flp_gsp::{interpreter::mysql::*, parse};
 #[test]
 fn test_mysql() {
     let s = "(((! `age` > `18`) & (`sex` ~ `male` | `sex` ~ `Female`)) & `name` * `J?c*`)";
-    let search = parse(s, false).unwrap();
+    let search = parse(s).unwrap();
     println!("{:?}", search);
 
     let mut renames = MysqlRenames::new();
@@ -13,7 +13,7 @@ fn test_mysql() {
     let mut types = MysqlTypes::new();
     types.insert("age".into(), MysqlType::Unsigned(0));
 
-    let interpreted = mysql(&search, &renames, &types);
+    let interpreted = interpret(&search, &renames, &types);
     let (clause, binds) = interpreted.get(0).unwrap();
 
     assert_eq!(

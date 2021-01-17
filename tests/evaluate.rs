@@ -7,7 +7,7 @@ use common::*;
 #[test]
 fn test_evaluate() {
     let s = "(((! `age` > `18`) & (`sex` ~ `male` | `sex` ~ `Female`)) & `name` * `J?c*`)";
-    let search = parse(s, false).unwrap();
+    let search = parse(s).unwrap();
     println!("{:?}", search);
 
     let mut rules = EvaluateRules::new();
@@ -58,7 +58,7 @@ fn test_evaluate() {
             pairs.insert("age".into(), a.age.to_string());
             pairs.insert("sex".into(), a.sex.into());
 
-            if *evaluate(&search, &rules, &pairs).get(0).unwrap() {
+            if *interpret(&search, &rules, &pairs).get(0).unwrap() {
                 Some(a.name)
             } else {
                 None
