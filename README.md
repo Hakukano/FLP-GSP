@@ -10,7 +10,7 @@ General Search Parser
 
 [Goto the page](https://hakukano.github.io).
 
-# General Search String (GSS) LALR(1) Grammer
+# General Search String (GSS) LALR(1) Grammar
 
 ```
     Search -> Statements
