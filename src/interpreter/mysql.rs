@@ -4,20 +4,38 @@ use crate::ast::*;
 
 #[derive(Debug, PartialEq)]
 pub enum MysqlType {
-    StringLike(String),
-    Int(i64),
-    Unsigned(u64),
-    Float(f32),
+    BigInt(i64),
+    BigUnsigned(u64),
+    Binary(Vec<u8>),
+    Bool(bool),
     Double(f64),
+    Float(f32),
+    Int(i32),
+    SmallInt(i16),
+    SmallUnsigned(u16),
+    StringLike(String),
+    TinyInt(i8),
+    TinyUnsigned(u8),
+    Unsigned(u32),
 }
 impl MysqlType {
     pub fn replace_and_return(&self, s: &str) -> Self {
         match self {
-            MysqlType::StringLike(_) => MysqlType::StringLike(s.into()),
-            MysqlType::Int(_) => MysqlType::Int(s.parse().unwrap_or_else(|_| 0)),
-            MysqlType::Unsigned(_) => MysqlType::Unsigned(s.parse().unwrap_or_else(|_| 0)),
-            MysqlType::Float(_) => MysqlType::Float(s.parse().unwrap_or_else(|_| 0.0)),
+            MysqlType::BigInt(_) => MysqlType::BigInt(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::BigUnsigned(_) => MysqlType::BigUnsigned(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::Binary(_) => MysqlType::Binary(s.as_bytes().into()),
+            MysqlType::Bool(_) => MysqlType::Bool(s.parse().unwrap_or_else(|_| false)),
             MysqlType::Double(_) => MysqlType::Double(s.parse().unwrap_or_else(|_| 0.0)),
+            MysqlType::Float(_) => MysqlType::Float(s.parse().unwrap_or_else(|_| 0.0)),
+            MysqlType::Int(_) => MysqlType::Int(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::SmallInt(_) => MysqlType::SmallInt(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::SmallUnsigned(_) => {
+                MysqlType::SmallUnsigned(s.parse().unwrap_or_else(|_| 0))
+            }
+            MysqlType::StringLike(_) => MysqlType::StringLike(s.into()),
+            MysqlType::TinyInt(_) => MysqlType::TinyInt(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::TinyUnsigned(_) => MysqlType::TinyUnsigned(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::Unsigned(_) => MysqlType::Unsigned(s.parse().unwrap_or_else(|_| 0)),
         }
     }
 }

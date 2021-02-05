@@ -32,7 +32,7 @@ lexer! {
     r#"<"# => Token::Less,
     r#"\*"# => Token::Wildcard,
     r#"\$"# => Token::Regex,
-    "." => panic!("Unexpected character")
+    "." => Token::Whitespace
 }
 
 pub struct Lexer<'a> {
