@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::ast::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum MysqlType {
     BigInt(i64),
     BigUnsigned(u64),
