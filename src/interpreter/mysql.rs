@@ -1,3 +1,4 @@
+use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use std::collections::HashMap;
 
 use crate::ast::*;
@@ -8,34 +9,49 @@ pub enum MysqlType {
     BigUnsigned(u64),
     Binary(Vec<u8>),
     Bool(bool),
+    Date(NaiveDate),
+    DateTime(NaiveDateTime),
     Double(f64),
     Float(f32),
     Int(i32),
+    Null,
     SmallInt(i16),
     SmallUnsigned(u16),
     StringLike(String),
+    Time(NaiveTime),
+    TimeStamp(DateTime<Utc>),
+    TimeTamp(DateTime<Local>),
     TinyInt(i8),
     TinyUnsigned(u8),
     Unsigned(u32),
 }
 impl MysqlType {
     pub fn replace_and_return(&self, s: &str) -> Self {
+        if s.to_ascii_lowercase() == "null" {
+            return MysqlType::Null;
+        }
         match self {
-            MysqlType::BigInt(_) => MysqlType::BigInt(s.parse().unwrap_or_else(|_| 0)),
-            MysqlType::BigUnsigned(_) => MysqlType::BigUnsigned(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::BigInt(a) => MysqlType::BigInt(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::BigUnsigned(a) => MysqlType::BigUnsigned(s.parse().unwrap_or_else(|_| *a)),
             MysqlType::Binary(_) => MysqlType::Binary(s.as_bytes().into()),
-            MysqlType::Bool(_) => MysqlType::Bool(s.parse().unwrap_or_else(|_| false)),
-            MysqlType::Double(_) => MysqlType::Double(s.parse().unwrap_or_else(|_| 0.0)),
-            MysqlType::Float(_) => MysqlType::Float(s.parse().unwrap_or_else(|_| 0.0)),
-            MysqlType::Int(_) => MysqlType::Int(s.parse().unwrap_or_else(|_| 0)),
-            MysqlType::SmallInt(_) => MysqlType::SmallInt(s.parse().unwrap_or_else(|_| 0)),
-            MysqlType::SmallUnsigned(_) => {
-                MysqlType::SmallUnsigned(s.parse().unwrap_or_else(|_| 0))
+            MysqlType::Bool(a) => MysqlType::Bool(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::Date(a) => MysqlType::Date(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::DateTime(a) => MysqlType::DateTime(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::Double(a) => MysqlType::Double(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::Float(a) => MysqlType::Float(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::Int(a) => MysqlType::Int(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::Null => MysqlType::Null,
+            MysqlType::SmallInt(a) => MysqlType::SmallInt(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::SmallUnsigned(a) => {
+                MysqlType::SmallUnsigned(s.parse().unwrap_or_else(|_| *a))
             }
             MysqlType::StringLike(_) => MysqlType::StringLike(s.into()),
-            MysqlType::TinyInt(_) => MysqlType::TinyInt(s.parse().unwrap_or_else(|_| 0)),
-            MysqlType::TinyUnsigned(_) => MysqlType::TinyUnsigned(s.parse().unwrap_or_else(|_| 0)),
-            MysqlType::Unsigned(_) => MysqlType::Unsigned(s.parse().unwrap_or_else(|_| 0)),
+            MysqlType::Time(a) => MysqlType::Time(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::TimeStamp(a) => MysqlType::TimeStamp(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::TimeTamp(a) => MysqlType::TimeTamp(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::TinyInt(a) => MysqlType::TinyInt(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::TinyUnsigned(a) => MysqlType::TinyUnsigned(s.parse().unwrap_or_else(|_| *a)),
+            MysqlType::Unsigned(a) => MysqlType::Unsigned(s.parse().unwrap_or_else(|_| *a)),
         }
     }
 }
