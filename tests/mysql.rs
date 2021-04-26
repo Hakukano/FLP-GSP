@@ -2,7 +2,7 @@ use flp_gsp::{interpreter::mysql::*, parse};
 
 #[test]
 fn test_mysql() {
-    let s = "(((! `age` > `18`) & (`sex` ~ `male` | `sex` ~ `Female`)) & `name` * `J?c*`)";
+    let s = "(((! `age` > `18`) & (`sex` = `male` | `sex` ~ `Female`)) & `name` * `J?c*`)";
     let search = parse(s).unwrap();
     println!("{:?}", search);
 
@@ -11,22 +11,22 @@ fn test_mysql() {
     renames.insert("sex".into(), "gender".into());
 
     let mut types = MysqlTypes::new();
-    types.insert("age".into(), MysqlType::Unsigned(0));
+    types.insert("age".into(), MysqlType::Unsigned(None));
 
-    let interpreted = interpret(&search, &renames, &types);
+    let interpreted = interpret(&search, &renames, &types).unwrap();
     let (clause, binds) = interpreted.get(0).unwrap();
 
     assert_eq!(
         clause,
-        "(((NOT `age` > ?) AND (`gender` = ? OR `gender` = ?)) AND `t.name` LIKE ?)"
+        "(((NOT `age` > ?) AND (`gender` <=> ? OR `gender` LIKE ?)) AND `t.name` LIKE ?)"
     );
     assert_eq!(
         binds,
         &vec![
-            MysqlType::Unsigned(18),
-            MysqlType::StringLike("male".into()),
-            MysqlType::StringLike("Female".into()),
-            MysqlType::StringLike("J_c%".into())
+            MysqlType::Unsigned(Some(18)),
+            MysqlType::StringLike(Some("male".into())),
+            MysqlType::StringLike(Some("Female".into())),
+            MysqlType::StringLike(Some("J_c%".into()))
         ]
     );
 }
