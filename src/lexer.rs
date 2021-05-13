@@ -3,6 +3,7 @@ use plex::lexer;
 #[derive(Debug)]
 pub enum Token {
     Whitespace,
+    Array(Vec<String>),
     Str(String),
     GroupStart,
     GroupEnd,
@@ -15,11 +16,18 @@ pub enum Token {
     Less,
     Wildcard,
     Regex,
+    In,
 }
 
 lexer! {
     fn take_token(tok: 'a) -> Token;
     r#"[ \t\r\n]"# => Token::Whitespace,
+    r#"\[[^\[,]*\w*(,[^\[,]*)*\]"# => {
+        Token::Array(tok[1..tok.len() - 1]
+            .split(",")
+            .map(|a| a.trim().into())
+            .collect())
+    },
     r#"`[^`]*`"# => Token::Str(tok[1..tok.len() - 1].into()),
     r#"\("# => Token::GroupStart,
     r#"\)"# => Token::GroupEnd,
@@ -32,6 +40,7 @@ lexer! {
     r#"<"# => Token::Less,
     r#"\*"# => Token::Wildcard,
     r#"\$"# => Token::Regex,
+    r#"\?"# => Token::In,
     "." => Token::Whitespace
 }
 

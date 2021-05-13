@@ -11,6 +11,7 @@ pub enum Expr {
     Less(String, String),
     Wildcard(String, String),
     Regex(String, String),
+    In(String, Vec<String>),
 }
 
 #[derive(Debug)]

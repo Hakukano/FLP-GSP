@@ -6,7 +6,7 @@ use common::*;
 
 #[test]
 fn test_evaluate() {
-    let s = "(((! `age` > `18`) & (`sex` ~ `male` | `sex` ~ `Female`)) & `name` * `J?c*`)";
+    let s = "(((! `age` > `18`) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `name` * `J?c*`)";
     let search = parse(s).unwrap();
     println!("{:?}", search);
 

@@ -256,6 +256,27 @@ pub fn interpret_expression(
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(target)?],
         ),
+        Expr::In(key, targets) => {
+            let sql = if targets.is_empty() {
+                "FALSE".to_string()
+            } else {
+                format!(
+                    "`{}` IN ({})",
+                    renames.get(key).unwrap_or_else(|| key),
+                    targets.iter().map(|_| "?").collect::<Vec<_>>().join(", ")
+                )
+            };
+            let mut binds = Vec::with_capacity(targets.len());
+            for target in targets.iter() {
+                binds.push(
+                    types
+                        .get(key)
+                        .unwrap_or_else(|| &fallback_type)
+                        .replace_and_return(target)?,
+                );
+            }
+            (sql, binds)
+        }
     })
 }
 

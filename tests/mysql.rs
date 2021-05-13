@@ -2,7 +2,7 @@ use flp_gsp::{interpreter::mysql::*, parse};
 
 #[test]
 fn test_mysql() {
-    let s = "(((! `age` > `18`) & (`sex` = `male` | `sex` ~ `Female`)) & `name` * `J?c*`)";
+    let s = "(((! `age` > `18`) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `name` * `J?c*`)";
     let search = parse(s).unwrap();
     println!("{:?}", search);
 
@@ -18,13 +18,14 @@ fn test_mysql() {
 
     assert_eq!(
         clause,
-        "(((NOT `age` > ?) AND (`gender` <=> ? OR `gender` LIKE ?)) AND `t.name` LIKE ?)"
+        "(((NOT `age` > ?) AND (`gender` IN (?, ?) OR `gender` LIKE ?)) AND `t.name` LIKE ?)"
     );
     assert_eq!(
         binds,
         &vec![
             MysqlType::Unsigned(Some(18)),
             MysqlType::StringLike(Some("male".into())),
+            MysqlType::StringLike(Some("Male".into())),
             MysqlType::StringLike(Some("Female".into())),
             MysqlType::StringLike(Some("J_c%".into()))
         ]

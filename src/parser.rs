@@ -100,6 +100,10 @@ parser! {
             span: span!(),
             node: Expr::Regex(a, b),
         },
+        Str(a) In Array(b) => Expression {
+            span: span!(),
+            node: Expr::In(a, b),
+        },
     }
 }
 

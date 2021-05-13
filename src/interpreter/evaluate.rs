@@ -11,6 +11,7 @@ pub struct EvaluateRule {
     pub is_less_than: fn(value: &str, target: &str) -> bool,
     pub is_match_wildcard: fn(value: &str, target: &str) -> bool,
     pub is_match_regex: fn(value: &str, target: &str) -> bool,
+    pub is_in: fn(value: &str, target: &[String]) -> bool,
 }
 impl Default for EvaluateRule {
     fn default() -> Self {
@@ -28,6 +29,7 @@ impl Default for EvaluateRule {
                 let reg = reg.unwrap();
                 reg.is_match(value)
             },
+            is_in: |value, target| target.contains(&value.to_string()),
         }
     }
 }
@@ -125,6 +127,19 @@ pub fn interpret_expression(
             }
             let value = value.unwrap();
             (rule.is_match_regex)(value, target)
+        }
+        Expr::In(key, targets) => {
+            let rule = rules.get(key);
+            if rule.is_none() {
+                return false;
+            }
+            let rule = rule.unwrap();
+            let value = pairs.get(key);
+            if value.is_none() {
+                return false;
+            }
+            let value = value.unwrap();
+            (rule.is_in)(value, targets)
         }
     }
 }
