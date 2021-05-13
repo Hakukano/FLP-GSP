@@ -36,8 +36,11 @@ Comparison -> Str Equal Str
            -> Str Less Str
            -> Str Wildcard Str
            -> Str Regex Str
+           -> Str In Array
 
        Str -> `[^`]*`
+       
+     Array -> \[[^\[,]*\w*(,[^\[,]*)*\]
 
 GroupStart -> (
 
