@@ -72,116 +72,25 @@ pub enum MysqlType {
 }
 impl MysqlType {
     pub fn replace_and_return(&self, s: &str) -> Result<Self> {
-        let is_null = s.to_ascii_lowercase() == "null";
         match self {
-            MysqlType::BigInt(_) => {
-                if is_null {
-                    return Ok(MysqlType::BigInt(None));
-                }
-                Ok(MysqlType::BigInt(Some(s.parse()?)))
-            }
-            MysqlType::BigUnsigned(_) => {
-                if is_null {
-                    return Ok(MysqlType::BigUnsigned(None));
-                }
-                Ok(MysqlType::BigUnsigned(Some(s.parse()?)))
-            }
-            MysqlType::Binary(_) => {
-                if is_null {
-                    return Ok(MysqlType::Binary(None));
-                }
-                Ok(MysqlType::Binary(Some(s.as_bytes().into())))
-            }
-            MysqlType::Bool(_) => {
-                if is_null {
-                    return Ok(MysqlType::Bool(None));
-                }
-                Ok(MysqlType::Bool(Some(s.parse()?)))
-            }
-            MysqlType::Date(_) => {
-                if is_null {
-                    return Ok(MysqlType::Date(None));
-                }
-                Ok(MysqlType::Date(Some(s.parse()?)))
-            }
-            MysqlType::DateTime(_) => {
-                if is_null {
-                    return Ok(MysqlType::DateTime(None));
-                }
-                Ok(MysqlType::DateTime(Some(s.parse()?)))
-            }
-            MysqlType::Double(_) => {
-                if is_null {
-                    return Ok(MysqlType::Double(None));
-                }
-                Ok(MysqlType::Double(Some(s.parse()?)))
-            }
-            MysqlType::Float(_) => {
-                if is_null {
-                    return Ok(MysqlType::Float(None));
-                }
-                Ok(MysqlType::Float(Some(s.parse()?)))
-            }
-            MysqlType::Int(_) => {
-                if is_null {
-                    return Ok(MysqlType::Int(None));
-                }
-                Ok(MysqlType::Int(Some(s.parse()?)))
-            }
-            MysqlType::SmallInt(_) => {
-                if is_null {
-                    return Ok(MysqlType::SmallInt(None));
-                }
-                Ok(MysqlType::SmallInt(Some(s.parse()?)))
-            }
-            MysqlType::SmallUnsigned(_) => {
-                if is_null {
-                    return Ok(MysqlType::SmallUnsigned(None));
-                }
-                Ok(MysqlType::SmallUnsigned(Some(s.parse()?)))
-            }
-            MysqlType::StringLike(_) => {
-                if is_null {
-                    return Ok(MysqlType::StringLike(None));
-                }
-                Ok(MysqlType::StringLike(Some(s.into())))
-            }
-            MysqlType::Time(_) => {
-                if is_null {
-                    return Ok(MysqlType::Time(None));
-                }
-                Ok(MysqlType::Time(Some(s.parse()?)))
-            }
-            MysqlType::TimeStamp(_) => {
-                if is_null {
-                    return Ok(MysqlType::TimeStamp(None));
-                }
-                Ok(MysqlType::TimeStamp(Some(s.parse()?)))
-            }
-            MysqlType::TimeTamp(_) => {
-                if is_null {
-                    return Ok(MysqlType::TimeTamp(None));
-                }
-                Ok(MysqlType::TimeTamp(Some(s.parse()?)))
-            }
-            MysqlType::TinyInt(_) => {
-                if is_null {
-                    return Ok(MysqlType::TinyInt(None));
-                }
-                Ok(MysqlType::TinyInt(Some(s.parse()?)))
-            }
-            MysqlType::TinyUnsigned(_) => {
-                if is_null {
-                    return Ok(MysqlType::TinyUnsigned(None));
-                }
-                Ok(MysqlType::TinyUnsigned(Some(s.parse()?)))
-            }
-            MysqlType::Unsigned(_) => {
-                if is_null {
-                    return Ok(MysqlType::Unsigned(None));
-                }
-                Ok(MysqlType::Unsigned(Some(s.parse()?)))
-            }
+            MysqlType::BigInt(_) => Ok(MysqlType::BigInt(Some(s.parse()?))),
+            MysqlType::BigUnsigned(_) => Ok(MysqlType::BigUnsigned(Some(s.parse()?))),
+            MysqlType::Binary(_) => Ok(MysqlType::Binary(Some(s.as_bytes().into()))),
+            MysqlType::Bool(_) => Ok(MysqlType::Bool(Some(s.parse()?))),
+            MysqlType::Date(_) => Ok(MysqlType::Date(Some(s.parse()?))),
+            MysqlType::DateTime(_) => Ok(MysqlType::DateTime(Some(s.parse()?))),
+            MysqlType::Double(_) => Ok(MysqlType::Double(Some(s.parse()?))),
+            MysqlType::Float(_) => Ok(MysqlType::Float(Some(s.parse()?))),
+            MysqlType::Int(_) => Ok(MysqlType::Int(Some(s.parse()?))),
+            MysqlType::SmallInt(_) => Ok(MysqlType::SmallInt(Some(s.parse()?))),
+            MysqlType::SmallUnsigned(_) => Ok(MysqlType::SmallUnsigned(Some(s.parse()?))),
+            MysqlType::StringLike(_) => Ok(MysqlType::StringLike(Some(s.into()))),
+            MysqlType::Time(_) => Ok(MysqlType::Time(Some(s.parse()?))),
+            MysqlType::TimeStamp(_) => Ok(MysqlType::TimeStamp(Some(s.parse()?))),
+            MysqlType::TimeTamp(_) => Ok(MysqlType::TimeTamp(Some(s.parse()?))),
+            MysqlType::TinyInt(_) => Ok(MysqlType::TinyInt(Some(s.parse()?))),
+            MysqlType::TinyUnsigned(_) => Ok(MysqlType::TinyUnsigned(Some(s.parse()?))),
+            MysqlType::Unsigned(_) => Ok(MysqlType::Unsigned(Some(s.parse()?))),
         }
     }
 }
@@ -215,7 +124,7 @@ pub fn interpret_expression(
             (format!("(NOT {})", clause), types)
         }
         Expr::Equal(key, target) => (
-            format!("`{}` <=> ?", renames.get(key).unwrap_or_else(|| key)),
+            format!("`{}` = ?", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
@@ -277,6 +186,10 @@ pub fn interpret_expression(
             }
             (sql, binds)
         }
+        Expr::IsNone(key) => (
+            format!("`{}` IS NULL", renames.get(key).unwrap_or_else(|| key)),
+            vec![],
+        ),
     })
 }
 

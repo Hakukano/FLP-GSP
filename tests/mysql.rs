@@ -2,7 +2,7 @@ use flp_gsp::{interpreter::mysql::*, parse};
 
 #[test]
 fn test_mysql() {
-    let s = "(((! `age` > `18`) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `name` * `J?c*`)";
+    let s = "((((! `age` -) & (! `age` > `18`)) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `name` * `J?c*`)";
     let search = parse(s).unwrap();
     println!("{:?}", search);
 
@@ -18,7 +18,7 @@ fn test_mysql() {
 
     assert_eq!(
         clause,
-        "(((NOT `age` > ?) AND (`gender` IN (?, ?) OR `gender` LIKE ?)) AND `t.name` LIKE ?)"
+        "((((NOT `age` IS NULL) AND (NOT `age` > ?)) AND (`gender` IN (?, ?) OR `gender` LIKE ?)) AND `t.name` LIKE ?)"
     );
     assert_eq!(
         binds,

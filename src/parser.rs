@@ -104,6 +104,10 @@ parser! {
             span: span!(),
             node: Expr::In(a, b),
         },
+        Str(a) IsNone => Expression {
+            span: span!(),
+            node: Expr::IsNone(a),
+        },
     }
 }
 

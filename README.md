@@ -37,6 +37,7 @@ Comparison -> Str Equal Str
            -> Str Wildcard Str
            -> Str Regex Str
            -> Str In Array
+           -> Str IsNone
 
        Str -> `[^`]*`
        
@@ -65,6 +66,8 @@ GroupStart -> (
      Regex -> $
      
         In -> ?
+
+    IsNone -> -
 ```
 
 # Interpreter

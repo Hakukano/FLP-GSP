@@ -12,6 +12,7 @@ pub enum Expr {
     Wildcard(String, String),
     Regex(String, String),
     In(String, Vec<String>),
+    IsNone(String),
 }
 
 #[derive(Debug)]

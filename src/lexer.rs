@@ -17,6 +17,7 @@ pub enum Token {
     Wildcard,
     Regex,
     In,
+    IsNone,
 }
 
 lexer! {
@@ -41,6 +42,7 @@ lexer! {
     r#"\*"# => Token::Wildcard,
     r#"\$"# => Token::Regex,
     r#"\?"# => Token::In,
+    r#"-"# => Token::IsNone,
     "." => Token::Whitespace
 }
 
