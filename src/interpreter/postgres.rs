@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime, ParseError, Utc};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, ParseError, Utc};
 use std::{
     collections::HashMap, fmt, num::ParseFloatError, num::ParseIntError, str::ParseBoolError,
 };
@@ -51,60 +51,50 @@ impl From<ParseError> for Error {
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum MysqlType {
+pub enum PostgresType {
     BigInt(Option<i64>),
-    BigUnsigned(Option<u64>),
-    Binary(Option<Vec<u8>>),
     Bool(Option<bool>),
+    Bytea(Option<Vec<u8>>),
+    Char(Option<i8>),
     Date(Option<NaiveDate>),
-    DateTime(Option<NaiveDateTime>),
     Double(Option<f64>),
-    Float(Option<f32>),
     Int(Option<i32>),
+    Real(Option<f32>),
     SmallInt(Option<i16>),
-    SmallUnsigned(Option<u16>),
     StringLike(Option<String>),
     Time(Option<NaiveTime>),
-    TimeStamp(Option<DateTime<Utc>>),
-    TimeTamp(Option<DateTime<Local>>),
-    TinyInt(Option<i8>),
-    TinyUnsigned(Option<u8>),
-    Unsigned(Option<u32>),
+    TimeStamp(Option<NaiveDateTime>),
+    TimeStampTz(Option<DateTime<Utc>>),
 }
-impl MysqlType {
+impl PostgresType {
     pub fn replace_and_return(&self, s: &str) -> Result<Self> {
         match self {
-            MysqlType::BigInt(_) => Ok(MysqlType::BigInt(Some(s.parse()?))),
-            MysqlType::BigUnsigned(_) => Ok(MysqlType::BigUnsigned(Some(s.parse()?))),
-            MysqlType::Binary(_) => Ok(MysqlType::Binary(Some(s.as_bytes().into()))),
-            MysqlType::Bool(_) => Ok(MysqlType::Bool(Some(s.parse()?))),
-            MysqlType::Date(_) => Ok(MysqlType::Date(Some(s.parse()?))),
-            MysqlType::DateTime(_) => Ok(MysqlType::DateTime(Some(s.parse()?))),
-            MysqlType::Double(_) => Ok(MysqlType::Double(Some(s.parse()?))),
-            MysqlType::Float(_) => Ok(MysqlType::Float(Some(s.parse()?))),
-            MysqlType::Int(_) => Ok(MysqlType::Int(Some(s.parse()?))),
-            MysqlType::SmallInt(_) => Ok(MysqlType::SmallInt(Some(s.parse()?))),
-            MysqlType::SmallUnsigned(_) => Ok(MysqlType::SmallUnsigned(Some(s.parse()?))),
-            MysqlType::StringLike(_) => Ok(MysqlType::StringLike(Some(s.into()))),
-            MysqlType::Time(_) => Ok(MysqlType::Time(Some(s.parse()?))),
-            MysqlType::TimeStamp(_) => Ok(MysqlType::TimeStamp(Some(s.parse()?))),
-            MysqlType::TimeTamp(_) => Ok(MysqlType::TimeTamp(Some(s.parse()?))),
-            MysqlType::TinyInt(_) => Ok(MysqlType::TinyInt(Some(s.parse()?))),
-            MysqlType::TinyUnsigned(_) => Ok(MysqlType::TinyUnsigned(Some(s.parse()?))),
-            MysqlType::Unsigned(_) => Ok(MysqlType::Unsigned(Some(s.parse()?))),
+            PostgresType::BigInt(_) => Ok(PostgresType::BigInt(Some(s.parse()?))),
+            PostgresType::Bool(_) => Ok(PostgresType::Bool(Some(s.parse()?))),
+            PostgresType::Bytea(_) => Ok(PostgresType::Bytea(Some(s.as_bytes().into()))),
+            PostgresType::Char(_) => Ok(PostgresType::Char(Some(s.parse()?))),
+            PostgresType::Date(_) => Ok(PostgresType::Date(Some(s.parse()?))),
+            PostgresType::Double(_) => Ok(PostgresType::Double(Some(s.parse()?))),
+            PostgresType::Int(_) => Ok(PostgresType::Int(Some(s.parse()?))),
+            PostgresType::Real(_) => Ok(PostgresType::Real(Some(s.parse()?))),
+            PostgresType::SmallInt(_) => Ok(PostgresType::SmallInt(Some(s.parse()?))),
+            PostgresType::StringLike(_) => Ok(PostgresType::StringLike(Some(s.into()))),
+            PostgresType::Time(_) => Ok(PostgresType::Time(Some(s.parse()?))),
+            PostgresType::TimeStamp(_) => Ok(PostgresType::TimeStamp(Some(s.parse()?))),
+            PostgresType::TimeStampTz(_) => Ok(PostgresType::TimeStampTz(Some(s.parse()?))),
         }
     }
 }
 
-pub type MysqlRenames = HashMap<String, String>;
-pub type MysqlTypes = HashMap<String, MysqlType>;
+pub type PostgresRenames = HashMap<String, String>;
+pub type PostgresTypes = HashMap<String, PostgresType>;
 
 pub fn interpret_expression(
     expression: &Expression,
-    renames: &MysqlRenames,
-    types: &MysqlTypes,
-) -> Result<(String, Vec<MysqlType>)> {
-    let fallback_type = MysqlType::StringLike(Some("".into()));
+    renames: &PostgresRenames,
+    types: &PostgresTypes,
+) -> Result<(String, Vec<PostgresType>)> {
+    let fallback_type = PostgresType::StringLike(Some("".into()));
     Ok(match &expression.node {
         Expr::And(left, right) => {
             let (left_clause, mut left_types) = interpret_expression(left, renames, types)?;
@@ -196,9 +186,9 @@ pub fn interpret_expression(
 
 pub fn interpret(
     search: &Search,
-    renames: &MysqlRenames,
-    types: &MysqlTypes,
-) -> Result<Vec<(String, Vec<MysqlType>)>> {
+    renames: &PostgresRenames,
+    types: &PostgresTypes,
+) -> Result<Vec<(String, Vec<PostgresType>)>> {
     let mut binds = Vec::with_capacity(search.stmts.len());
     for stmt in search.stmts.iter() {
         binds.push(interpret_expression(stmt, renames, types)?);

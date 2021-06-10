@@ -101,3 +101,7 @@ To generate Mysql condition clause from a `Search`, you will need `MysqlRenames`
 * `MysqlRenames`: You can insert any rename rules to it. E.g. key `sex` in search string may need to be renamed to `table_a.gender` regarding the actual query string. All keys without rename rules will stay as is.
 
 * `MysqlTypes`: You can insert any types to it. You need this because the condition clause is a prepare clause (i.e. all values are replaced as placeholder(?)) and you will be given a Vec<MysqlType> with search targets in the order that "?"s appear in the clause. For details, please read the example. Additionally, MysqlType::StringLike(String) is the default type if you didn't insert types for one or some keys.
+
+## Postgres
+
+Very similar to Mysql except for some types.
