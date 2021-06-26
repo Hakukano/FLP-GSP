@@ -1,4 +1,6 @@
+use bigdecimal::{BigDecimal, ParseBigDecimalError};
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime, ParseError, Utc};
+use json::JsonValue;
 use std::{
     collections::HashMap, fmt, num::ParseFloatError, num::ParseIntError, str::ParseBoolError,
 };
@@ -47,6 +49,16 @@ impl From<ParseError> for Error {
         Self::new("chrono", err)
     }
 }
+impl From<ParseBigDecimalError> for Error {
+    fn from(err: ParseBigDecimalError) -> Self {
+        Self::new("bigdecimal", err)
+    }
+}
+impl From<json::Error> for Error {
+    fn from(err: json::Error) -> Self {
+        Self::new("json", err)
+    }
+}
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -58,9 +70,11 @@ pub enum MysqlType {
     Bool(Option<bool>),
     Date(Option<NaiveDate>),
     DateTime(Option<NaiveDateTime>),
+    Decimal(Option<BigDecimal>),
     Double(Option<f64>),
     Float(Option<f32>),
     Int(Option<i32>),
+    Json(Option<JsonValue>),
     SmallInt(Option<i16>),
     SmallUnsigned(Option<u16>),
     StringLike(Option<String>),
@@ -80,9 +94,11 @@ impl MysqlType {
             MysqlType::Bool(_) => Ok(MysqlType::Bool(Some(s.parse()?))),
             MysqlType::Date(_) => Ok(MysqlType::Date(Some(s.parse()?))),
             MysqlType::DateTime(_) => Ok(MysqlType::DateTime(Some(s.parse()?))),
+            MysqlType::Decimal(_) => Ok(MysqlType::Decimal(Some(s.parse()?))),
             MysqlType::Double(_) => Ok(MysqlType::Double(Some(s.parse()?))),
             MysqlType::Float(_) => Ok(MysqlType::Float(Some(s.parse()?))),
             MysqlType::Int(_) => Ok(MysqlType::Int(Some(s.parse()?))),
+            MysqlType::Json(_) => Ok(MysqlType::Json(Some(json::parse(s)?))),
             MysqlType::SmallInt(_) => Ok(MysqlType::SmallInt(Some(s.parse()?))),
             MysqlType::SmallUnsigned(_) => Ok(MysqlType::SmallUnsigned(Some(s.parse()?))),
             MysqlType::StringLike(_) => Ok(MysqlType::StringLike(Some(s.into()))),

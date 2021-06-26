@@ -72,9 +72,9 @@ GroupStart -> (
 
 # Interpreter
 
-Some example interpreters that maybe useful
+Some example interpreters that maybe useful, need to be enabled by feature
 
-## Evaluate
+## Evaluate ["evaluate"]
 
 Customizable in-code evaluating interpreter. [Goto the file](https://github.com/Hakukano/FLP-GSP/blob/main/src/interpreter/evaluate.rs).
 
@@ -88,7 +88,7 @@ To evaluate a `Search`, you will need `EvaluateRules` and `EvaluatePairs`.
 
 * `EvaluatePairs`: Actual key-value pairs for the evaluation. You need to parse your values into strings so that rules can be applied.
 
-## Mysql
+## Mysql ["mysql"]
 
 Generating Mysql condition clause. [Goto the file](https://github.com/Hakukano/FLP-GSP/blob/main/src/interpreter/mysql.rs).
 
@@ -102,6 +102,6 @@ To generate Mysql condition clause from a `Search`, you will need `MysqlRenames`
 
 * `MysqlTypes`: You can insert any types to it. You need this because the condition clause is a prepare clause (i.e. all values are replaced as placeholder(?)) and you will be given a Vec<MysqlType> with search targets in the order that "?"s appear in the clause. For details, please read the example. Additionally, MysqlType::StringLike(String) is the default type if you didn't insert types for one or some keys.
 
-## Postgres
+## Postgres ["postgres"]
 
 Very similar to Mysql except for some types.

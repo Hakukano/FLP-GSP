@@ -1,7 +1,9 @@
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, ParseError, Utc};
+use ipnetwork::{IpNetwork, IpNetworkError};
 use std::{
     collections::HashMap, fmt, num::ParseFloatError, num::ParseIntError, str::ParseBoolError,
 };
+use uuid::Uuid;
 
 use crate::ast::*;
 
@@ -47,6 +49,21 @@ impl From<ParseError> for Error {
         Self::new("chrono", err)
     }
 }
+impl From<IpNetworkError> for Error {
+    fn from(err: IpNetworkError) -> Self {
+        Self::new("ipnetwork", err)
+    }
+}
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Self {
+        Self::new("serde_json", err)
+    }
+}
+impl From<uuid::Error> for Error {
+    fn from(err: uuid::Error) -> Self {
+        Self::new("uuid", err)
+    }
+}
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -58,13 +75,16 @@ pub enum PostgresType {
     Char(Option<i8>),
     Date(Option<NaiveDate>),
     Double(Option<f64>),
+    INet(Option<IpNetwork>),
     Int(Option<i32>),
+    Json(Option<serde_json::Value>),
     Real(Option<f32>),
     SmallInt(Option<i16>),
     StringLike(Option<String>),
     Time(Option<NaiveTime>),
     TimeStamp(Option<NaiveDateTime>),
     TimeStampTz(Option<DateTime<Utc>>),
+    Uuid(Option<Uuid>),
 }
 impl PostgresType {
     pub fn replace_and_return(&self, s: &str) -> Result<Self> {
@@ -75,13 +95,16 @@ impl PostgresType {
             PostgresType::Char(_) => Ok(PostgresType::Char(Some(s.parse()?))),
             PostgresType::Date(_) => Ok(PostgresType::Date(Some(s.parse()?))),
             PostgresType::Double(_) => Ok(PostgresType::Double(Some(s.parse()?))),
+            PostgresType::INet(_) => Ok(PostgresType::INet(Some(s.parse()?))),
             PostgresType::Int(_) => Ok(PostgresType::Int(Some(s.parse()?))),
+            PostgresType::Json(_) => Ok(PostgresType::Json(Some(s.parse()?))),
             PostgresType::Real(_) => Ok(PostgresType::Real(Some(s.parse()?))),
             PostgresType::SmallInt(_) => Ok(PostgresType::SmallInt(Some(s.parse()?))),
             PostgresType::StringLike(_) => Ok(PostgresType::StringLike(Some(s.into()))),
             PostgresType::Time(_) => Ok(PostgresType::Time(Some(s.parse()?))),
             PostgresType::TimeStamp(_) => Ok(PostgresType::TimeStamp(Some(s.parse()?))),
             PostgresType::TimeStampTz(_) => Ok(PostgresType::TimeStampTz(Some(s.parse()?))),
+            PostgresType::Uuid(_) => Ok(PostgresType::Uuid(Some(s.parse()?))),
         }
     }
 }
