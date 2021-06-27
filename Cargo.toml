@@ -1,6 +1,6 @@
 [package]
 name = "flp-gsp"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Hakukano <flp.hakukano@gmail.com>"]
 edition = "2018"
 description = "General search parser"
@@ -15,11 +15,12 @@ readme = "README.md"
 [dependencies]
 plex = "0.2"
 
-bigdecimal = { version = "0.2", optional = true }
+bit-vec = { version = "0.6", optional = true }
 chrono = { version = "0.4", optional = true }
 ipnetwork = { version = "0.18", optional = true }
 json = { version = "0.12", optional = true }
 regex = { version = "1.4", optional = true }
+rust_decimal = { version = "1.14", optional = true }
 serde_json = { version = "1.0", optional = true }
 uuid = { version = "0.8", optional = true }
 wildmatch = { version = "1.0", optional = true }
@@ -27,5 +28,5 @@ wildmatch = { version = "1.0", optional = true }
 [features]
 default = []
 evaluate = ["regex", "wildmatch"]
-mysql = ["bigdecimal", "chrono", "json"]
-postgres = ["chrono", "ipnetwork", "serde_json", "uuid"]
+mysql = ["chrono", "json", "rust_decimal"]
+postgres = ["bit-vec", "chrono", "ipnetwork", "rust_decimal", "serde_json", "uuid"]

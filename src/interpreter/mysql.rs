@@ -1,6 +1,6 @@
-use bigdecimal::{BigDecimal, ParseBigDecimalError};
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime, ParseError, Utc};
 use json::JsonValue;
+use rust_decimal::Decimal;
 use std::{
     collections::HashMap, fmt, num::ParseFloatError, num::ParseIntError, str::ParseBoolError,
 };
@@ -49,9 +49,9 @@ impl From<ParseError> for Error {
         Self::new("chrono", err)
     }
 }
-impl From<ParseBigDecimalError> for Error {
-    fn from(err: ParseBigDecimalError) -> Self {
-        Self::new("bigdecimal", err)
+impl From<rust_decimal::Error> for Error {
+    fn from(err: rust_decimal::Error) -> Self {
+        Self::new("decimal", err)
     }
 }
 impl From<json::Error> for Error {
@@ -70,7 +70,7 @@ pub enum MysqlType {
     Bool(Option<bool>),
     Date(Option<NaiveDate>),
     DateTime(Option<NaiveDateTime>),
-    Decimal(Option<BigDecimal>),
+    Decimal(Option<Decimal>),
     Double(Option<f64>),
     Float(Option<f32>),
     Int(Option<i32>),

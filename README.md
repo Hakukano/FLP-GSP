@@ -94,6 +94,8 @@ Generating Mysql condition clause. [Goto the file](https://github.com/Hakukano/F
 
 An example could be found [here](https://github.com/Hakukano/FLP-GSP/blob/main/tests/mysql.rs).
 
+The types can be used in [sqlx^0.5](https://crates.io/crates/sqlx) binding directly.
+
 ### Concept
 
 To generate Mysql condition clause from a `Search`, you will need `MysqlRenames` and `MysqlTypes`.
@@ -105,3 +107,9 @@ To generate Mysql condition clause from a `Search`, you will need `MysqlRenames`
 ## Postgres ["postgres"]
 
 Very similar to Mysql except for some types.
+
+The types can be used in [sqlx^0.5](https://crates.io/crates/sqlx) binding directly, except several types defined by sqlx itself, e.g. `PgInterval`, `PgMoney`, etc.
+
+### Special Types
+
+* VarBit: `target` need to be in format of `<u64>`. E.g. `1024` stands for bits `0000010000000000`

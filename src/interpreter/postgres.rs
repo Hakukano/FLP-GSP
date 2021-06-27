@@ -1,5 +1,7 @@
+use bit_vec::BitVec;
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, ParseError, Utc};
 use ipnetwork::{IpNetwork, IpNetworkError};
+use rust_decimal::Decimal;
 use std::{
     collections::HashMap, fmt, num::ParseFloatError, num::ParseIntError, str::ParseBoolError,
 };
@@ -64,6 +66,11 @@ impl From<uuid::Error> for Error {
         Self::new("uuid", err)
     }
 }
+impl From<rust_decimal::Error> for Error {
+    fn from(err: rust_decimal::Error) -> Self {
+        Self::new("decimal", err)
+    }
+}
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -78,6 +85,7 @@ pub enum PostgresType {
     INet(Option<IpNetwork>),
     Int(Option<i32>),
     Json(Option<serde_json::Value>),
+    Numeric(Option<Decimal>),
     Real(Option<f32>),
     SmallInt(Option<i16>),
     StringLike(Option<String>),
@@ -85,6 +93,7 @@ pub enum PostgresType {
     TimeStamp(Option<NaiveDateTime>),
     TimeStampTz(Option<DateTime<Utc>>),
     Uuid(Option<Uuid>),
+    VarBit(Option<BitVec>),
 }
 impl PostgresType {
     pub fn replace_and_return(&self, s: &str) -> Result<Self> {
@@ -98,6 +107,7 @@ impl PostgresType {
             PostgresType::INet(_) => Ok(PostgresType::INet(Some(s.parse()?))),
             PostgresType::Int(_) => Ok(PostgresType::Int(Some(s.parse()?))),
             PostgresType::Json(_) => Ok(PostgresType::Json(Some(s.parse()?))),
+            PostgresType::Numeric(_) => Ok(PostgresType::Numeric(Some(s.parse()?))),
             PostgresType::Real(_) => Ok(PostgresType::Real(Some(s.parse()?))),
             PostgresType::SmallInt(_) => Ok(PostgresType::SmallInt(Some(s.parse()?))),
             PostgresType::StringLike(_) => Ok(PostgresType::StringLike(Some(s.into()))),
@@ -105,6 +115,9 @@ impl PostgresType {
             PostgresType::TimeStamp(_) => Ok(PostgresType::TimeStamp(Some(s.parse()?))),
             PostgresType::TimeStampTz(_) => Ok(PostgresType::TimeStampTz(Some(s.parse()?))),
             PostgresType::Uuid(_) => Ok(PostgresType::Uuid(Some(s.parse()?))),
+            PostgresType::VarBit(_) => Ok(PostgresType::VarBit(Some(BitVec::from_bytes(
+                &s.parse::<u64>()?.to_be_bytes(),
+            )))),
         }
     }
 }
