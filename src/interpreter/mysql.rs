@@ -1,5 +1,4 @@
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime, ParseError, Utc};
-use json::JsonValue;
 use rust_decimal::Decimal;
 use std::{
     collections::HashMap, fmt, num::ParseFloatError, num::ParseIntError, str::ParseBoolError,
@@ -54,9 +53,9 @@ impl From<rust_decimal::Error> for Error {
         Self::new("decimal", err)
     }
 }
-impl From<json::Error> for Error {
-    fn from(err: json::Error) -> Self {
-        Self::new("json", err)
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Self {
+        Self::new("serde_json", err)
     }
 }
 
@@ -74,7 +73,7 @@ pub enum MysqlType {
     Double(Option<f64>),
     Float(Option<f32>),
     Int(Option<i32>),
-    Json(Option<JsonValue>),
+    Json(Option<serde_json::Value>),
     SmallInt(Option<i16>),
     SmallUnsigned(Option<u16>),
     StringLike(Option<String>),
@@ -98,7 +97,7 @@ impl MysqlType {
             MysqlType::Double(_) => Ok(MysqlType::Double(Some(s.parse()?))),
             MysqlType::Float(_) => Ok(MysqlType::Float(Some(s.parse()?))),
             MysqlType::Int(_) => Ok(MysqlType::Int(Some(s.parse()?))),
-            MysqlType::Json(_) => Ok(MysqlType::Json(Some(json::parse(s)?))),
+            MysqlType::Json(_) => Ok(MysqlType::Json(Some(s.parse()?))),
             MysqlType::SmallInt(_) => Ok(MysqlType::SmallInt(Some(s.parse()?))),
             MysqlType::SmallUnsigned(_) => Ok(MysqlType::SmallUnsigned(Some(s.parse()?))),
             MysqlType::StringLike(_) => Ok(MysqlType::StringLike(Some(s.into()))),
