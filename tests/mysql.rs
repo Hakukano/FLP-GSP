@@ -1,10 +1,11 @@
+#![cfg(feature = "mysql")]
+
 use flp_gsp::{interpreter::mysql::*, parse};
 
 #[test]
 fn test_mysql() {
     let s = "((((! `age` -) & (! `age` > `18`)) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `name` * `J?c*`)";
     let search = parse(s).unwrap();
-    println!("{:?}", search);
 
     let mut renames = MysqlRenames::new();
     renames.insert("name".into(), "t.name".into());

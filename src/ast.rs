@@ -1,4 +1,19 @@
-use crate::lexer::Span;
+#[derive(Debug)]
+pub enum Symbol {
+    GroupStart,
+    GroupEnd,
+    And,
+    Or,
+    Not,
+    Equal,
+    EqualCI,
+    Greater,
+    Less,
+    Wildcard,
+    Regex,
+    In,
+    IsNone,
+}
 
 #[derive(Debug)]
 pub enum Expr {
@@ -15,8 +30,15 @@ pub enum Expr {
     IsNone(String),
 }
 
+#[derive(Debug, Default, Clone, Copy)]
+pub struct Span {
+    pub lo: usize,
+    pub hi: usize,
+}
+
 #[derive(Debug)]
 pub struct Expression {
+    /// Fake span for now
     pub span: Span,
     pub node: Expr,
 }
