@@ -151,42 +151,42 @@ pub fn interpret_expression(
             (format!("(NOT {})", clause), types)
         }
         Expr::Equal(key, target) => (
-            format!("`{}` = ?", renames.get(key).unwrap_or_else(|| key)),
+            format!("`{}` = ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(target)?],
         ),
         Expr::EqualCI(key, target) => (
-            format!("`{}` LIKE ?", renames.get(key).unwrap_or_else(|| key)),
+            format!("`{}` LIKE ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(target)?],
         ),
         Expr::Greater(key, target) => (
-            format!("`{}` > ?", renames.get(key).unwrap_or_else(|| key)),
+            format!("`{}` > ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(target)?],
         ),
         Expr::Less(key, target) => (
-            format!("`{}` < ?", renames.get(key).unwrap_or_else(|| key)),
+            format!("`{}` < ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(target)?],
         ),
         Expr::Wildcard(key, target) => (
-            format!("`{}` LIKE ?", renames.get(key).unwrap_or_else(|| key)),
+            format!("`{}` LIKE ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(&target.replace("*", "%").replace("?", "_"))?],
         ),
         Expr::Regex(key, target) => (
-            format!("`{}` = ?", renames.get(key).unwrap_or_else(|| key)),
+            format!("`{}` = ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
@@ -199,7 +199,7 @@ pub fn interpret_expression(
                 format!(
                     "`{}` IN ({})",
                     renames.get(key).unwrap_or_else(|| key),
-                    targets.iter().map(|_| "?").collect::<Vec<_>>().join(", ")
+                    targets.iter().map(|_| "??").collect::<Vec<_>>().join(", ")
                 )
             };
             let mut binds = Vec::with_capacity(targets.len());
@@ -224,10 +224,20 @@ pub fn interpret(
     search: &Search,
     renames: &PostgresRenames,
     types: &PostgresTypes,
+    index: usize,
 ) -> Result<Vec<(String, Vec<PostgresType>)>> {
     let mut binds = Vec::with_capacity(search.stmts.len());
     for stmt in search.stmts.iter() {
-        binds.push(interpret_expression(stmt, renames, types)?);
+        let (tmp_sql, params) = interpret_expression(stmt, renames, types)?;
+        let mut buffer = String::new();
+        let splitted = tmp_sql.split("??").collect::<Vec<_>>();
+        for (i, s) in splitted.iter().enumerate() {
+            buffer.push_str(s);
+            if i < splitted.len() - 1 {
+                buffer.push_str(format!("${}", index + i).as_str());
+            }
+        }
+        binds.push((buffer, params));
     }
     Ok(binds)
 }

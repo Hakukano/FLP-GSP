@@ -3,7 +3,7 @@
 use flp_gsp::{interpreter::postgres::*, parse};
 
 #[test]
-fn test_mysql() {
+fn test_postgres() {
     let s = "((((! `age` -) & (! `age` > `18`)) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `name` * `J?c*`)";
     let search = parse(s).unwrap();
 
@@ -14,12 +14,12 @@ fn test_mysql() {
     let mut types = PostgresTypes::new();
     types.insert("age".into(), PostgresType::Int(None));
 
-    let interpreted = interpret(&search, &renames, &types).unwrap();
+    let interpreted = interpret(&search, &renames, &types, 1).unwrap();
     let (clause, binds) = interpreted.get(0).unwrap();
 
     assert_eq!(
         clause,
-        "((((NOT `age` IS NULL) AND (NOT `age` > ?)) AND (`gender` IN (?, ?) OR `gender` LIKE ?)) AND `t.name` LIKE ?)"
+        "((((NOT `age` IS NULL) AND (NOT `age` > $1)) AND (`gender` IN ($2, $3) OR `gender` LIKE $4)) AND `t.name` LIKE $5)"
     );
     assert_eq!(
         binds,
