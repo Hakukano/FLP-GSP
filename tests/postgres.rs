@@ -19,7 +19,7 @@ fn test_postgres() {
 
     assert_eq!(
         clause,
-        "((((NOT `age` IS NULL) AND (NOT `age` > $1)) AND (`gender` IN ($2, $3) OR `gender` LIKE $4)) AND `t.name` LIKE $5)"
+        "((((NOT age IS NULL) AND (NOT age > $1)) AND (gender IN ($2, $3) OR gender LIKE $4)) AND t.name LIKE $5)"
     );
     assert_eq!(
         binds,

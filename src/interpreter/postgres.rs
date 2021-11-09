@@ -151,42 +151,42 @@ pub fn interpret_expression(
             (format!("(NOT {})", clause), types)
         }
         Expr::Equal(key, target) => (
-            format!("`{}` = ??", renames.get(key).unwrap_or_else(|| key)),
+            format!("{} = ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(target)?],
         ),
         Expr::EqualCI(key, target) => (
-            format!("`{}` LIKE ??", renames.get(key).unwrap_or_else(|| key)),
+            format!("{} LIKE ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(target)?],
         ),
         Expr::Greater(key, target) => (
-            format!("`{}` > ??", renames.get(key).unwrap_or_else(|| key)),
+            format!("{} > ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(target)?],
         ),
         Expr::Less(key, target) => (
-            format!("`{}` < ??", renames.get(key).unwrap_or_else(|| key)),
+            format!("{} < ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(target)?],
         ),
         Expr::Wildcard(key, target) => (
-            format!("`{}` LIKE ??", renames.get(key).unwrap_or_else(|| key)),
+            format!("{} LIKE ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
                 .replace_and_return(&target.replace("*", "%").replace("?", "_"))?],
         ),
         Expr::Regex(key, target) => (
-            format!("`{}` = ??", renames.get(key).unwrap_or_else(|| key)),
+            format!("{} = ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
@@ -197,7 +197,7 @@ pub fn interpret_expression(
                 "FALSE".to_string()
             } else {
                 format!(
-                    "`{}` IN ({})",
+                    "{} IN ({})",
                     renames.get(key).unwrap_or_else(|| key),
                     targets.iter().map(|_| "??").collect::<Vec<_>>().join(", ")
                 )
@@ -214,7 +214,7 @@ pub fn interpret_expression(
             (sql, binds)
         }
         Expr::IsNone(key) => (
-            format!("`{}` IS NULL", renames.get(key).unwrap_or_else(|| key)),
+            format!("{} IS NULL", renames.get(key).unwrap_or_else(|| key)),
             vec![],
         ),
     })
