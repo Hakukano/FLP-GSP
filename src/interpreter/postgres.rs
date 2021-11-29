@@ -158,7 +158,7 @@ pub fn interpret_expression(
                 .replace_and_return(target)?],
         ),
         Expr::EqualCI(key, target) => (
-            format!("{} LIKE ??", renames.get(key).unwrap_or_else(|| key)),
+            format!("{} ILIKE ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
@@ -179,7 +179,7 @@ pub fn interpret_expression(
                 .replace_and_return(target)?],
         ),
         Expr::Wildcard(key, target) => (
-            format!("{} LIKE ??", renames.get(key).unwrap_or_else(|| key)),
+            format!("{} ILIKE ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .unwrap_or_else(|| &fallback_type)
