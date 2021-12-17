@@ -2,74 +2,31 @@ use bit_vec::BitVec;
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, ParseError, Utc};
 use ipnetwork::{IpNetwork, IpNetworkError};
 use rust_decimal::Decimal;
-use std::{
-    collections::HashMap, fmt, num::ParseFloatError, num::ParseIntError, str::ParseBoolError,
-};
+use std::{collections::HashMap, num::ParseFloatError, num::ParseIntError, str::ParseBoolError};
 use uuid::Uuid;
 
 use crate::ast::*;
 
-#[derive(Debug)]
-pub struct Error {
-    target: String,
-    error: String,
-}
-impl Error {
-    fn new<E>(target: &str, error: E) -> Self
-    where
-        E: fmt::Display,
-    {
-        Self {
-            target: target.into(),
-            error: error.to_string(),
-        }
-    }
-}
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Cannot parse to {}: {}", self.target, self.error)
-    }
-}
-impl std::error::Error for Error {}
-impl From<ParseIntError> for Error {
-    fn from(err: ParseIntError) -> Self {
-        Self::new("int", err)
-    }
-}
-impl From<ParseFloatError> for Error {
-    fn from(err: ParseFloatError) -> Self {
-        Self::new("float", err)
-    }
-}
-impl From<ParseBoolError> for Error {
-    fn from(err: ParseBoolError) -> Self {
-        Self::new("bool", err)
-    }
-}
-impl From<ParseError> for Error {
-    fn from(err: ParseError) -> Self {
-        Self::new("chrono", err)
-    }
-}
-impl From<IpNetworkError> for Error {
-    fn from(err: IpNetworkError) -> Self {
-        Self::new("ipnetwork", err)
-    }
-}
-impl From<serde_json::Error> for Error {
-    fn from(err: serde_json::Error) -> Self {
-        Self::new("serde_json", err)
-    }
-}
-impl From<uuid::Error> for Error {
-    fn from(err: uuid::Error) -> Self {
-        Self::new("uuid", err)
-    }
-}
-impl From<rust_decimal::Error> for Error {
-    fn from(err: rust_decimal::Error) -> Self {
-        Self::new("decimal", err)
-    }
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("Cannot parse to int: {0}")]
+    ParseInt(#[from] ParseIntError),
+    #[error("Cannot parse to float: {0}")]
+    ParseFloat(#[from] ParseFloatError),
+    #[error("Cannot parse to bool: {0}")]
+    ParseBool(#[from] ParseBoolError),
+    #[error("Cannot parse to chrono: {0}")]
+    ParseChrono(#[from] ParseError),
+    #[error("Cannot parse to decimal: {0}")]
+    ParseDecimal(#[from] rust_decimal::Error),
+    #[error("Cannot parse to ipnetwork: {0}")]
+    ParseIpNetwork(#[from] IpNetworkError),
+    #[error("Cannot parse to uuid: {0}")]
+    ParseUuid(#[from] uuid::Error),
+    #[error("Cannot serialize: {0}")]
+    Serialization(#[from] serde_json::Error),
+    #[error("Cannot find key {0} in types")]
+    UnknownKey(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -130,7 +87,6 @@ pub fn interpret_expression(
     renames: &PostgresRenames,
     types: &PostgresTypes,
 ) -> Result<(String, Vec<PostgresType>)> {
-    let fallback_type = PostgresType::StringLike(Some("".into()));
     Ok(match &expression.node {
         Expr::And(left, right) => {
             let (left_clause, mut left_types) = interpret_expression(left, renames, types)?;
@@ -154,42 +110,42 @@ pub fn interpret_expression(
             format!("{} = ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
-                .unwrap_or_else(|| &fallback_type)
+                .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
         Expr::EqualCI(key, target) => (
             format!("{} ILIKE ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
-                .unwrap_or_else(|| &fallback_type)
+                .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
         Expr::Greater(key, target) => (
             format!("{} > ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
-                .unwrap_or_else(|| &fallback_type)
+                .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
         Expr::Less(key, target) => (
             format!("{} < ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
-                .unwrap_or_else(|| &fallback_type)
+                .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
         Expr::Wildcard(key, target) => (
             format!("{} ILIKE ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
-                .unwrap_or_else(|| &fallback_type)
+                .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(&target.replace("*", "%").replace("?", "_"))?],
         ),
         Expr::Regex(key, target) => (
             format!("{} = ??", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
-                .unwrap_or_else(|| &fallback_type)
+                .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
         Expr::In(key, targets) => {
@@ -207,16 +163,21 @@ pub fn interpret_expression(
                 binds.push(
                     types
                         .get(key)
-                        .unwrap_or_else(|| &fallback_type)
+                        .ok_or(Error::UnknownKey(key.to_string()))?
                         .replace_and_return(target)?,
                 );
             }
             (sql, binds)
         }
-        Expr::IsNone(key) => (
-            format!("{} IS NULL", renames.get(key).unwrap_or_else(|| key)),
-            vec![],
-        ),
+        Expr::IsNone(key) => {
+            if !types.contains_key(key) {
+                return Err(Error::UnknownKey(key.to_string()));
+            }
+            (
+                format!("{} IS NULL", renames.get(key).unwrap_or_else(|| key)),
+                vec![],
+            )
+        }
     })
 }
 

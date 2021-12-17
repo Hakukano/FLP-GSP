@@ -13,6 +13,8 @@ fn test_sqlite() {
 
     let mut types = SqliteTypes::new();
     types.insert("age".into(), SqliteType::Integer(None));
+    types.insert("sex".into(), SqliteType::Text(None));
+    types.insert("name".into(), SqliteType::Text(None));
 
     let interpreted = interpret(&search, &renames, &types).unwrap();
     let (clause, binds) = interpreted.get(0).unwrap();

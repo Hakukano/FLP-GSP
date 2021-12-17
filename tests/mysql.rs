@@ -13,13 +13,15 @@ fn test_mysql() {
 
     let mut types = MysqlTypes::new();
     types.insert("age".into(), MysqlType::Unsigned(None));
+    types.insert("sex".into(), MysqlType::StringLike(None));
+    types.insert("name".into(), MysqlType::StringLike(None));
 
     let interpreted = interpret(&search, &renames, &types).unwrap();
     let (clause, binds) = interpreted.get(0).unwrap();
 
     assert_eq!(
         clause,
-        "((((NOT `age` IS NULL) AND (NOT `age` > ?)) AND (`gender` IN (?, ?) OR `gender` LIKE ?)) AND `t.name` LIKE ?)"
+        "((((NOT age IS NULL) AND (NOT age > ?)) AND (gender IN (?, ?) OR gender LIKE ?)) AND t.name LIKE ?)"
     );
     assert_eq!(
         binds,
