@@ -9,3 +9,6 @@ pub mod postgres;
 
 #[cfg(feature = "sqlite")]
 pub mod sqlite;
+
+#[cfg(feature = "hasura")]
+pub mod hasura;
