@@ -1,6 +1,6 @@
 [package]
 name = "flp-gsp"
-version = "0.3.8"
+version = "0.3.9"
 authors = ["Hakukano <flp.hakukano@gmail.com>"]
 edition = "2018"
 description = "General search parser"
