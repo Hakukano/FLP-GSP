@@ -1,11 +1,12 @@
 #![cfg(feature = "postgres")]
 
-use flp_gsp::{interpreter::postgres::*, parse};
+use flp_gsp::{interpreter::postgres::*, Expression};
 
 #[test]
 fn test_postgres() {
-    let s = "((((! `age` -) & (! `age` > `18`)) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `\"name\"` * `J?c*`)";
-    let search = parse(s).unwrap();
+    let s = r#"((((! "age" -) & (! "age" > "18")) & ("sex" ? ["male", "Male"] | "sex" ~ "Female")) & "\"name\"" * "J?c*")"#;
+    let expression = Expression::try_from_str(s).unwrap();
+    println!("{:?}", expression);
 
     let mut renames = PostgresRenames::new();
     renames.insert("sex".into(), "gender".into());
@@ -15,8 +16,8 @@ fn test_postgres() {
     types.insert("sex".into(), PostgresType::StringLike(None));
     types.insert("\"name\"".into(), PostgresType::StringLike(None));
 
-    let interpreted = interpret(&search, &renames, &types, 1).unwrap();
-    let (clause, binds) = interpreted.get(0).unwrap();
+    let interpreted = interpret(&expression, &renames, &types, 1).unwrap();
+    let (clause, binds) = interpreted;
 
     assert_eq!(
         clause,
@@ -24,7 +25,7 @@ fn test_postgres() {
     );
     assert_eq!(
         binds,
-        &vec![
+        vec![
             PostgresType::Int(Some(18)),
             PostgresType::StringLike(Some("male".into())),
             PostgresType::StringLike(Some("Male".into())),

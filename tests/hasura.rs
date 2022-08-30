@@ -1,19 +1,19 @@
 #![cfg(feature = "hasura")]
 
-use flp_gsp::{interpreter::hasura::*, parse};
+use flp_gsp::{interpreter::hasura::*, Expression};
 
 #[test]
 fn test_sqlite() {
-    let s = "((((! `age` -) & (! `age` > `18`)) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `name` * `J?c*`)";
-    let search = parse(s).unwrap();
+    let s = r#"(  (((! "age" -) & (! "age" > "18")) & ("sex" ? ["male", "Male"     ] | "sex" ~ "Female")) & "name" * "J?c*")"#;
+    let expression = Expression::try_from_str(s).unwrap();
 
     let mut types = HasuraTypes::new();
     types.insert("age".into(), HasuraType::Integer);
     types.insert("sex".into(), HasuraType::StringLike);
     types.insert("name".into(), HasuraType::StringLike);
 
-    let interpreted = interpret(&search, &types).unwrap();
-    let clause = interpreted.get(0).unwrap();
+    let interpreted = interpret(&expression, &types).unwrap();
+    let clause = interpreted;
 
     assert_eq!(
         clause,

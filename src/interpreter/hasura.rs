@@ -1,5 +1,6 @@
-use crate::ast::*;
 use std::{collections::HashMap, num::ParseFloatError, num::ParseIntError, str::ParseBoolError};
+
+use crate::{Expression, Node};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -37,23 +38,23 @@ pub type HasuraTypes = HashMap<String, HasuraType>;
 
 pub fn interpret_expression(expression: &Expression, types: &HasuraTypes) -> Result<String> {
     Ok(match &expression.node {
-        Expr::And(left, right) => {
+        Node::And(left, right) => {
             let left_clause = interpret_expression(left, types)?;
             let right_clause = interpret_expression(right, types)?;
             let clause = format!("{{_and:[{},{}]}}", left_clause, right_clause);
             clause
         }
-        Expr::Or(left, right) => {
+        Node::Or(left, right) => {
             let left_clause = interpret_expression(left, types)?;
             let right_clause = interpret_expression(right, types)?;
             let clause = format!("{{_or:[{},{}]}}", left_clause, right_clause);
             clause
         }
-        Expr::Not(expr) => {
+        Node::Not(expr) => {
             let clause = interpret_expression(expr, types)?;
             format!("{{_not:{}}}", clause)
         }
-        Expr::Equal(key, target) => format!(
+        Node::Equal(key, target) => format!(
             "{{{}:{{_eq:{}}}}}",
             key,
             types
@@ -61,7 +62,7 @@ pub fn interpret_expression(expression: &Expression, types: &HasuraTypes) -> Res
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .to_hasura_string(target)?
         ),
-        Expr::EqualCI(key, target) => format!(
+        Node::EqualCI(key, target) => format!(
             "{{{}:{{_ilike:{}}}}}",
             key,
             types
@@ -69,7 +70,7 @@ pub fn interpret_expression(expression: &Expression, types: &HasuraTypes) -> Res
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .to_hasura_string(target)?
         ),
-        Expr::Greater(key, target) => format!(
+        Node::Greater(key, target) => format!(
             "{{{}:{{_gt:{}}}}}",
             key,
             types
@@ -77,7 +78,7 @@ pub fn interpret_expression(expression: &Expression, types: &HasuraTypes) -> Res
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .to_hasura_string(target)?
         ),
-        Expr::Less(key, target) => format!(
+        Node::Less(key, target) => format!(
             "{{{}:{{_lt:{}}}}}",
             key,
             types
@@ -85,7 +86,7 @@ pub fn interpret_expression(expression: &Expression, types: &HasuraTypes) -> Res
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .to_hasura_string(target)?
         ),
-        Expr::Wildcard(key, target) => format!(
+        Node::Wildcard(key, target) => format!(
             "{{{}:{{_ilike:{}}}}}",
             key,
             types
@@ -93,7 +94,7 @@ pub fn interpret_expression(expression: &Expression, types: &HasuraTypes) -> Res
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .to_hasura_string(&target.replace("*", "%").replace("?", "_"))?
         ),
-        Expr::Regex(key, target) => format!(
+        Node::Regex(key, target) => format!(
             "{{{}:{{_regex:{}}}}}",
             key,
             types
@@ -101,7 +102,7 @@ pub fn interpret_expression(expression: &Expression, types: &HasuraTypes) -> Res
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .to_hasura_string(target)?
         ),
-        Expr::In(key, targets) => {
+        Node::Any(key, targets) => {
             let mut values = Vec::with_capacity(targets.len());
             for target in targets.iter() {
                 values.push(
@@ -113,7 +114,7 @@ pub fn interpret_expression(expression: &Expression, types: &HasuraTypes) -> Res
             }
             format!("{{{}:{{_in:[{}]}}}}", key, values.join(","))
         }
-        Expr::IsNone(key) => {
+        Node::Null(key) => {
             if !types.contains_key(key) {
                 return Err(Error::UnknownKey(key.to_string()));
             }
@@ -122,10 +123,6 @@ pub fn interpret_expression(expression: &Expression, types: &HasuraTypes) -> Res
     })
 }
 
-pub fn interpret(search: &Search, types: &HasuraTypes) -> Result<Vec<String>> {
-    let mut binds = Vec::with_capacity(search.stmts.len());
-    for stmt in search.stmts.iter() {
-        binds.push(interpret_expression(stmt, types)?);
-    }
-    Ok(binds)
+pub fn interpret(expression: &Expression, types: &HasuraTypes) -> Result<String> {
+    Ok(interpret_expression(expression, types)?)
 }

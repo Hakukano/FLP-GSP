@@ -2,7 +2,7 @@ use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime, ParseError, U
 use rust_decimal::Decimal;
 use std::{collections::HashMap, num::ParseFloatError, num::ParseIntError, str::ParseBoolError};
 
-use crate::ast::*;
+use crate::{Expression, Node};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -83,67 +83,67 @@ pub fn interpret_expression(
     types: &MysqlTypes,
 ) -> Result<(String, Vec<MysqlType>)> {
     Ok(match &expression.node {
-        Expr::And(left, right) => {
+        Node::And(left, right) => {
             let (left_clause, mut left_types) = interpret_expression(left, renames, types)?;
             let (right_clause, mut right_types) = interpret_expression(right, renames, types)?;
             let clause = format!("({} AND {})", left_clause, right_clause);
             left_types.append(&mut right_types);
             (clause, left_types)
         }
-        Expr::Or(left, right) => {
+        Node::Or(left, right) => {
             let (left_clause, mut left_types) = interpret_expression(left, renames, types)?;
             let (right_clause, mut right_types) = interpret_expression(right, renames, types)?;
             let clause = format!("({} OR {})", left_clause, right_clause);
             left_types.append(&mut right_types);
             (clause, left_types)
         }
-        Expr::Not(expr) => {
+        Node::Not(expr) => {
             let (clause, types) = interpret_expression(expr, renames, types)?;
             (format!("(NOT {})", clause), types)
         }
-        Expr::Equal(key, target) => (
+        Node::Equal(key, target) => (
             format!("{} = ?", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
-        Expr::EqualCI(key, target) => (
+        Node::EqualCI(key, target) => (
             format!("{} LIKE ?", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
-        Expr::Greater(key, target) => (
+        Node::Greater(key, target) => (
             format!("{} > ?", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
-        Expr::Less(key, target) => (
+        Node::Less(key, target) => (
             format!("{} < ?", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
-        Expr::Wildcard(key, target) => (
+        Node::Wildcard(key, target) => (
             format!("{} LIKE ?", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(&target.replace("*", "%").replace("?", "_"))?],
         ),
-        Expr::Regex(key, target) => (
+        Node::Regex(key, target) => (
             format!("{} = ?", renames.get(key).unwrap_or_else(|| key)),
             vec![types
                 .get(key)
                 .ok_or(Error::UnknownKey(key.to_string()))?
                 .replace_and_return(target)?],
         ),
-        Expr::In(key, targets) => {
+        Node::Any(key, targets) => {
             let sql = if targets.is_empty() {
                 "FALSE".to_string()
             } else {
@@ -164,7 +164,7 @@ pub fn interpret_expression(
             }
             (sql, binds)
         }
-        Expr::IsNone(key) => {
+        Node::Null(key) => {
             if !types.contains_key(key) {
                 return Err(Error::UnknownKey(key.to_string()));
             }
@@ -177,13 +177,9 @@ pub fn interpret_expression(
 }
 
 pub fn interpret(
-    search: &Search,
+    expression: &Expression,
     renames: &MysqlRenames,
     types: &MysqlTypes,
-) -> Result<Vec<(String, Vec<MysqlType>)>> {
-    let mut binds = Vec::with_capacity(search.stmts.len());
-    for stmt in search.stmts.iter() {
-        binds.push(interpret_expression(stmt, renames, types)?);
-    }
-    Ok(binds)
+) -> Result<(String, Vec<MysqlType>)> {
+    Ok(interpret_expression(expression, renames, types)?)
 }

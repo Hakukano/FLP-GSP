@@ -1,11 +1,11 @@
 #![cfg(feature = "mysql")]
 
-use flp_gsp::{interpreter::mysql::*, parse};
+use flp_gsp::{interpreter::mysql::*, Expression};
 
 #[test]
 fn test_mysql() {
-    let s = "((((! `age` -) & (! `age` > `18`)) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `name` * `J?c*`)";
-    let search = parse(s).unwrap();
+    let s = r#"((((! "age" -) & (! "age" > "18")) & ("sex" ? ["male", "Male"] | "sex" ~ "Female")) & "name" * "J?c*")"#;
+    let expression = Expression::try_from_str(s).unwrap();
 
     let mut renames = MysqlRenames::new();
     renames.insert("name".into(), "t.name".into());
@@ -16,8 +16,8 @@ fn test_mysql() {
     types.insert("sex".into(), MysqlType::StringLike(None));
     types.insert("name".into(), MysqlType::StringLike(None));
 
-    let interpreted = interpret(&search, &renames, &types).unwrap();
-    let (clause, binds) = interpreted.get(0).unwrap();
+    let interpreted = interpret(&expression, &renames, &types).unwrap();
+    let (clause, binds) = interpreted;
 
     assert_eq!(
         clause,
@@ -25,7 +25,7 @@ fn test_mysql() {
     );
     assert_eq!(
         binds,
-        &vec![
+        vec![
             MysqlType::Unsigned(Some(18)),
             MysqlType::StringLike(Some("male".into())),
             MysqlType::StringLike(Some("Male".into())),

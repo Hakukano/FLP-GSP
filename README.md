@@ -1,8 +1,6 @@
 # FLP-GSP
 
-![Crates.io](https://img.shields.io/crates/v/flp-gsp)
-![Crates.io](https://img.shields.io/crates/l/flp-gsp)
-![Crates.io](https://img.shields.io/crates/d/flp-gsp)
+[![Crates.io Version](https://img.shields.io/crates/v/flp-gsp.svg)](https://crates.io/crates/flp-gsp)
 
 General Search Parser
 
@@ -13,10 +11,7 @@ General Search Parser
 # General Search String (GSS) LALR(1) Grammar
 
 ```
-    Search -> Statements
-
-Statements ->
-           -> Statements Relation
+    Search -> Relation
 
   Relation -> GroupStart Comparison GroupEnd
            -> GroupStart Relation And Relation GroupEnd
@@ -36,12 +31,12 @@ Comparison -> Str Equal Str
            -> Str Less Str
            -> Str Wildcard Str
            -> Str Regex Str
-           -> Str In Array
-           -> Str IsNone
+           -> Str Any Array
+           -> Str Null
 
-       Str -> `[^`]*`
+       Str -> DoubleQuote Content DoubleQuote
        
-     Array -> \[[^\[,]*\w*(,[^\[,]*)*\]
+     Array -> SquareBracketLeft (Str Comma)* SquareBracketRight
 
 GroupStart -> (
 
@@ -65,9 +60,9 @@ GroupStart -> (
 
      Regex -> $
      
-        In -> ?
+       Any -> ?
 
-    IsNone -> -
+      Null -> -
 ```
 
 # Interpreter
