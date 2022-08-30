@@ -1,11 +1,11 @@
 #![cfg(feature = "sqlite")]
 
-use flp_gsp::{interpreter::sqlite::*, parse};
+use flp_gsp::{interpreter::sqlite::*, Expression};
 
 #[test]
 fn test_sqlite() {
-    let s = "((((! `age` -) & (! `age` > `18`)) & (`sex` ? [male, Male] | `sex` ~ `Female`)) & `name` * `J?c*`)";
-    let search = parse(s).unwrap();
+    let s = r#"((((! "age" -) & (! "age" > "18")) & ("sex" ? ["male", "Male"] | "sex" ~ "Female")) & "name" * "J?c*")"#;
+    let expression = Expression::try_from_str(s).unwrap();
 
     let mut renames = SqliteRenames::new();
     renames.insert("name".into(), "t.name".into());
@@ -16,8 +16,8 @@ fn test_sqlite() {
     types.insert("sex".into(), SqliteType::Text(None));
     types.insert("name".into(), SqliteType::Text(None));
 
-    let interpreted = interpret(&search, &renames, &types).unwrap();
-    let (clause, binds) = interpreted.get(0).unwrap();
+    let interpreted = interpret(&expression, &renames, &types).unwrap();
+    let (clause, binds) = interpreted;
 
     assert_eq!(
         clause,
@@ -25,7 +25,7 @@ fn test_sqlite() {
     );
     assert_eq!(
         binds,
-        &vec![
+        vec![
             SqliteType::Integer(Some(18)),
             SqliteType::Text(Some("male".into())),
             SqliteType::Text(Some("Male".into())),

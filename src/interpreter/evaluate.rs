@@ -2,7 +2,7 @@ use regex::Regex;
 use std::collections::HashMap;
 use wildmatch::WildMatch;
 
-use crate::ast::*;
+use crate::{Expression, Node};
 
 pub struct EvaluateRule {
     pub is_equal: fn(value: &str, target: &str) -> bool,
@@ -21,7 +21,7 @@ impl Default for EvaluateRule {
             is_equal_ci: |value, target| value.to_lowercase() == target.to_lowercase(),
             is_greater_than: |value, target| value > target,
             is_less_than: |value, target| value < target,
-            is_match_wildcard: |value, target| WildMatch::new(target).is_match(value),
+            is_match_wildcard: |value, target| WildMatch::new(target).matches(value),
             is_match_regex: |value, target| {
                 let reg = Regex::new(target);
                 if reg.is_err() {
@@ -47,14 +47,14 @@ pub fn interpret_expression(
     pairs: &EvaluatePairs,
 ) -> bool {
     match &expression.node {
-        Expr::And(left, right) => {
+        Node::And(left, right) => {
             interpret_expression(left, rules, pairs) && interpret_expression(right, rules, pairs)
         }
-        Expr::Or(left, right) => {
+        Node::Or(left, right) => {
             interpret_expression(left, rules, pairs) || interpret_expression(right, rules, pairs)
         }
-        Expr::Not(expr) => !interpret_expression(expr, rules, pairs),
-        Expr::Equal(key, target) => {
+        Node::Not(expr) => !interpret_expression(expr, rules, pairs),
+        Node::Equal(key, target) => {
             let rule = rules.get(key);
             if rule.is_none() {
                 return false;
@@ -67,7 +67,7 @@ pub fn interpret_expression(
             let value = value.unwrap();
             (rule.is_equal)(value, target)
         }
-        Expr::EqualCI(key, target) => {
+        Node::EqualCI(key, target) => {
             let rule = rules.get(key);
             if rule.is_none() {
                 return false;
@@ -80,7 +80,7 @@ pub fn interpret_expression(
             let value = value.unwrap();
             (rule.is_equal_ci)(value, target)
         }
-        Expr::Greater(key, target) => {
+        Node::Greater(key, target) => {
             let rule = rules.get(key);
             if rule.is_none() {
                 return false;
@@ -93,7 +93,7 @@ pub fn interpret_expression(
             let value = value.unwrap();
             (rule.is_greater_than)(value, target)
         }
-        Expr::Less(key, target) => {
+        Node::Less(key, target) => {
             let rule = rules.get(key);
             if rule.is_none() {
                 return false;
@@ -106,7 +106,7 @@ pub fn interpret_expression(
             let value = value.unwrap();
             (rule.is_less_than)(value, target)
         }
-        Expr::Wildcard(key, target) => {
+        Node::Wildcard(key, target) => {
             let rule = rules.get(key);
             if rule.is_none() {
                 return false;
@@ -119,7 +119,7 @@ pub fn interpret_expression(
             let value = value.unwrap();
             (rule.is_match_wildcard)(value, target)
         }
-        Expr::Regex(key, target) => {
+        Node::Regex(key, target) => {
             let rule = rules.get(key);
             if rule.is_none() {
                 return false;
@@ -132,7 +132,7 @@ pub fn interpret_expression(
             let value = value.unwrap();
             (rule.is_match_regex)(value, target)
         }
-        Expr::In(key, targets) => {
+        Node::Any(key, targets) => {
             let rule = rules.get(key);
             if rule.is_none() {
                 return false;
@@ -145,7 +145,7 @@ pub fn interpret_expression(
             let value = value.unwrap();
             (rule.is_in)(value, targets)
         }
-        Expr::IsNone(key) => {
+        Node::Null(key) => {
             let rule = rules.get(key);
             if rule.is_none() {
                 return false;
@@ -161,10 +161,6 @@ pub fn interpret_expression(
     }
 }
 
-pub fn interpret(search: &Search, rules: &EvaluateRules, pairs: &EvaluatePairs) -> Vec<bool> {
-    search
-        .stmts
-        .iter()
-        .map(|a| interpret_expression(a, rules, pairs))
-        .collect()
+pub fn interpret(expression: &Expression, rules: &EvaluateRules, pairs: &EvaluatePairs) -> bool {
+    interpret_expression(expression, rules, pairs)
 }
